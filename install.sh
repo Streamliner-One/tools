@@ -6,7 +6,7 @@ APP_NAME="tools-config-server"
 INSTALL_ROOT="/opt/streamliner"
 APP_DIR="$INSTALL_ROOT/$APP_NAME"
 SERVICE_NAME="tools-config-server"
-REPO_TARBALL_DEFAULT="https://github.com/prudkov/mel-memory/archive/refs/heads/master.tar.gz"
+REPO_TARBALL_DEFAULT="https://raw.githubusercontent.com/Streamliner-One/install/main/artifacts/tools-config-server-main.tar.gz"
 BIND_DEFAULT="0.0.0.0:8443"
 
 log(){ echo "[install] $*"; }

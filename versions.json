@@ -1,12 +1,12 @@
 {
   "channels": {
     "stable": {
-      "version": "0.1.1",
-      "artifact_url": "https://github.com/prudkov/mel-memory/archive/refs/heads/master.tar.gz"
+      "version": "0.1.2",
+      "artifact_url": "https://raw.githubusercontent.com/Streamliner-One/install/main/artifacts/tools-config-server-main.tar.gz"
     },
     "latest": {
-      "version": "0.1.1",
-      "artifact_url": "https://github.com/prudkov/mel-memory/archive/refs/heads/master.tar.gz"
+      "version": "0.1.2",
+      "artifact_url": "https://raw.githubusercontent.com/Streamliner-One/install/main/artifacts/tools-config-server-main.tar.gz"
     }
   }
 }
