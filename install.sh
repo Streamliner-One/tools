@@ -106,14 +106,17 @@ download_and_extract(){
   log "Extracting..."
   tar -xzf "$tmp/app.tar.gz" -C "$tmp"
 
-  # Handle GitHub archive structure: repo-main/
+  # Handle both archive styles:
+  # 1) GitHub tarball: one top-level dir (repo-main/)
+  # 2) Flat tarball: files extracted directly into $tmp
   local extracted
-  extracted=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -n1)
+  extracted=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -n1 || true)
 
-  # If repo root has tools-server/ use it; else use root
-  if [ -d "$extracted/tools-server" ]; then
+  if [ -f "$tmp/server.js" ]; then
+    cp -a "$tmp/." "$APP_DIR/"
+  elif [ -n "$extracted" ] && [ -d "$extracted/tools-server" ]; then
     cp -a "$extracted/tools-server/." "$APP_DIR/"
-  else
+  elif [ -n "$extracted" ]; then
     cp -a "$extracted/." "$APP_DIR/"
   fi
 
