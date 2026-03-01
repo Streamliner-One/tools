@@ -95,7 +95,7 @@ download_and_extract(){
   local tarball_url="$1"
   local tmp
   tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' EXIT
+  trap "rm -rf '$tmp'" EXIT
 
   log "Downloading artifact: $tarball_url"
   curl -fL "$tarball_url" -o "$tmp/app.tar.gz"
