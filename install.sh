@@ -6,7 +6,7 @@ APP_NAME="tools-config-server"
 INSTALL_ROOT="/opt/streamliner"
 APP_DIR="$INSTALL_ROOT/$APP_NAME"
 SERVICE_NAME="tools-config-server"
-REPO_TARBALL_DEFAULT="https://github.com/Streamliner-One/tools-config-server/archive/refs/heads/main.tar.gz"
+REPO_TARBALL_DEFAULT="https://github.com/prudkov/mel-memory/archive/refs/heads/master.tar.gz"
 BIND_DEFAULT="0.0.0.0:8443"
 
 log(){ echo "[install] $*"; }
@@ -185,6 +185,7 @@ main(){
 
   local tarball
   tarball=$(resolve_tarball)
+  log "Resolved artifact: $tarball"
   download_and_extract "$tarball"
   install_app
 
