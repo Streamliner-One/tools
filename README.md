@@ -1,8 +1,6 @@
-# install
+# OpenClaw Tools Config Server
 
-One-line installer and release manifests for [tools-config-server](https://github.com/Streamliner-One/tools-config-server).
-
-## Install
+Self-hosted credential vault, service health dashboard, live query runner, and TOOLS.md generator for AI agent infrastructure.
 
 ```bash
 curl https://install.streamliner.one | bash
@@ -10,21 +8,74 @@ curl https://install.streamliner.one | bash
 
 Sets up Node.js, downloads the server, installs dependencies, creates a systemd service, and prints your access URL and password. Tested on Ubuntu 22.04 / 24.04.
 
-## What gets installed
+---
 
-→ [tools-config-server](https://github.com/Streamliner-One/tools-config-server) — self-hosted credential vault, OAuth re-auth, service health dashboard, live query runner, and TOOLS.md generator for AI agent infrastructure.
+## What it does
 
-## Channels
+| Feature | Description |
+|---------|-------------|
+| **Credential vault** | Store and manage API keys, tokens, and OAuth configs in one place |
+| **Live validation** | Test button per service — confirms keys work before your agent tries them |
+| **Health dashboard** | All services at a glance with status, last checked, and error details |
+| **Query runner** | Ready-to-use curl examples for every service, executable server-side |
+| **TOOLS.md generator** | Auto-generates a human-readable credential reference for AI agents |
+| **Intent router** | Lightweight `router.json` maps agent intents to the right service — no guessing |
+| **Rate limit resilience** | Configurable retry + exponential backoff when providers return 429 |
+| **Update center** | One-click update from the dashboard — no SSH required |
 
-| Channel | Version |
-|---------|---------|
-| `stable` | 0.6.1 |
-| `latest` | 0.6.1 |
+---
 
-Channel manifest: [`versions.json`](./versions.json)
+## Supported services (24)
+
+| Category | Services |
+|----------|----------|
+| **AI** | OpenAI, Anthropic, Moonshot (Kimi), Perplexity |
+| **Search** | Brave Search, NewsAPI |
+| **Productivity** | Notion, Todoist, Google Workspace |
+| **Travel** | Amadeus, Duffel, Aviationstack |
+| **Voice** | ElevenLabs, VAPI |
+| **Automation** | n8n |
+| **Vector DB** | Pinecone |
+| **Messaging** | Telegram |
+| **Location** | Google Places |
+| **Finance** | Open Exchange Rates |
+| **Logistics** | 17TRACK |
+| **Health** | Oura |
+| **Security** | 1Password |
+| **Audio** | OpenAI Whisper |
+| **Weather** | Open-Meteo (no key needed) |
+| **Image** | Nano Banana Pro |
+
+---
+
+## Security model
+
+- Password protected (bcrypt hashed)
+- HTTP-only session cookies
+- Helmet security headers
+- Self-signed TLS option (`--https`)
+- **Bind to Tailscale recommended** — keeps the dashboard off the public internet
+- Temporal access mode (`--temp 30`) — auto-shuts down after N minutes for safe temporary exposure
+
+---
 
 ## Manual channel selection
 
 ```bash
 curl https://install.streamliner.one | bash -s -- --channel latest
 ```
+
+## Channels
+
+| Channel | Version |
+|---------|---------|
+| `stable` | 0.7.6 |
+| `latest` | 0.7.6 |
+
+Channel manifest: [`versions.json`](./versions.json)
+
+---
+
+## For Streamliner One clients
+
+Pre-installed on provisioned VPS instances. Clients configure their own keys without SSH or VNC access. Rate limit handling keeps automations running during provider outages. TOOLS.md auto-generated for AI agent documentation compliance.
