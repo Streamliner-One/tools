@@ -72,8 +72,8 @@ curl https://install.streamliner.one | bash -s -- --channel latest
 
 | Channel | Version |
 |---------|---------|
-| `stable` | 0.8.1 |
-| `latest` | 0.8.1 |
+| `stable` | 0.8.2 |
+| `latest` | 0.8.2 |
 
 Channel manifest: [`versions.json`](./versions.json)
 
