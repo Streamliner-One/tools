@@ -181,6 +181,35 @@ start_service(){
   systemctl --no-pager --full status "$SERVICE_NAME" || true
 }
 
+write_access_file(){
+  local pass="$1"
+  local bind="${TOOLS_CONFIG_BIND:-$BIND_DEFAULT}"
+  local port="${bind##*:}"
+  local version
+  version=$(node -e "try{const p=require('$APP_DIR/package.json');console.log(p.version)}catch(e){console.log('unknown')}" 2>/dev/null || echo "unknown")
+
+  # Write JSON access file for agent/human discovery
+  cat > /root/.tools-server-access <<ACCESS
+{
+  "url": "https://localhost:${port}",
+  "password": "${pass}",
+  "version": "${version}",
+  "install_path": "${APP_DIR}",
+  "api_guide": "https://localhost:${port}/api/agent-guide",
+  "auth": "POST /api/login with {\"password\": \"<password>\"} — sets session cookie",
+  "key_endpoints": {
+    "credentials": "GET /api/credentials",
+    "health": "GET /api/health",
+    "router": "GET /api/router?intent=<intent>",
+    "agent_guide": "GET /api/agent-guide"
+  },
+  "installed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+ACCESS
+  chmod 600 /root/.tools-server-access
+  log "Access file written to /root/.tools-server-access"
+}
+
 main(){
   install_deps
   install_node
@@ -197,20 +226,24 @@ main(){
   write_env "$pass"
   write_service
   start_service
+  write_access_file "$pass"
 
   local bind
   bind=$(grep '^TOOLS_CONFIG_BIND=' /etc/default/tools-config-server | cut -d= -f2-)
 
   echo
   echo "✅ Tools Config Server installed"
-  echo "   Service: $SERVICE_NAME"
-  echo "   Bind:    $bind"
-  echo "   URL:     https://<server-ip>:${bind##*:}"
-  echo "   Password: $pass"
+  echo "   Service:     $SERVICE_NAME"
+  echo "   Bind:        $bind"
+  echo "   URL:         https://<server-ip>:${bind##*:}"
+  echo "   Password:    $pass"
+  echo "   Access file: /root/.tools-server-access"
+  echo "   Agent guide: https://localhost:${bind##*:}/api/agent-guide"
   echo
   echo "Commands:"
   echo "  systemctl status $SERVICE_NAME"
   echo "  journalctl -u $SERVICE_NAME -f"
+  echo "  cat /root/.tools-server-access"
 }
 
 main "$@"

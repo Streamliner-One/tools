@@ -1,11 +1,11 @@
 {
   "channels": {
     "stable": {
-      "version": "0.7.6",
+      "version": "0.7.7",
       "artifact_url": "https://raw.githubusercontent.com/Streamliner-One/install/main/artifacts/tools-config-server-main.tar.gz"
     },
     "latest": {
-      "version": "0.7.6",
+      "version": "0.7.7",
       "artifact_url": "https://raw.githubusercontent.com/Streamliner-One/install/main/artifacts/tools-config-server-main.tar.gz"
     }
   }
