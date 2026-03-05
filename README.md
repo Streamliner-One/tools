@@ -45,6 +45,7 @@ Sets up Node.js, downloads the server, installs dependencies, creates a systemd 
 | **Audio** | OpenAI Whisper |
 | **Weather** | Open-Meteo (no key needed) |
 | **Image** | Nano Banana Pro |
+| **Memory** | Mem0 |
 | **Utilities** | Public Holidays (Nager.Date) |
 | **Developer** | GitHub, Supabase, Resend |
 
@@ -71,8 +72,8 @@ curl https://install.streamliner.one | bash -s -- --channel latest
 
 | Channel | Version |
 |---------|---------|
-| `stable` | 0.8.0 |
-| `latest` | 0.8.0 |
+| `stable` | 0.8.1 |
+| `latest` | 0.8.1 |
 
 Channel manifest: [`versions.json`](./versions.json)
 
