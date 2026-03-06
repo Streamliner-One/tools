@@ -32,6 +32,7 @@ Sets up Node.js, downloads the server, installs dependencies, creates a systemd 
 | **AI** | OpenAI, Anthropic, Moonshot (Kimi), Gemini (Google) |
 | **Search** | Brave Search, Perplexity, NewsAPI |
 | **Productivity** | Notion, Notion (Enhanced), Todoist, Google Workspace |
+| **Knowledge** | Obsidian Sync (Headless), Readwise |
 | **Travel** | Amadeus, Duffel, Aviationstack |
 | **Voice** | ElevenLabs, VAPI |
 | **Automation** | n8n |
@@ -72,8 +73,8 @@ curl https://install.streamliner.one | bash -s -- --channel latest
 
 | Channel | Version |
 |---------|---------|
-| `stable` | 0.8.3 |
-| `latest` | 0.8.3 |
+| `stable` | 0.8.4 |
+| `latest` | 0.8.4 |
 
 Channel manifest: [`versions.json`](./versions.json)
 
