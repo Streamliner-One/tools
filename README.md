@@ -3,7 +3,7 @@
 Self-hosted credential vault, service health dashboard, live query runner, and TOOLS.md generator for AI agent infrastructure.
 
 ```bash
-curl https://install.streamliner.one | bash
+curl https://tools.streamliner.one | bash
 ```
 
 Sets up Node.js, downloads the server, installs dependencies, creates a systemd service, and prints your access URL and password. Tested on Ubuntu 22.04 / 24.04.
@@ -67,7 +67,7 @@ Sets up Node.js, downloads the server, installs dependencies, creates a systemd 
 ## Manual channel selection
 
 ```bash
-curl https://install.streamliner.one | bash -s -- --channel latest
+curl https://tools.streamliner.one | bash -s -- --channel latest
 ```
 
 ## Channels

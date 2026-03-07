@@ -17,7 +17,7 @@ need_cmd(){ command -v "$1" >/dev/null 2>&1 || { err "Missing required command: 
 is_root(){ [ "${EUID:-$(id -u)}" -eq 0 ]; }
 
 if ! is_root; then
-  err "Please run as root (or with sudo): curl -fsSL https://install.streamliner.one | sudo bash"
+  err "Please run as root (or with sudo): curl -fsSL https://tools.streamliner.one | sudo bash"
   exit 1
 fi
 
