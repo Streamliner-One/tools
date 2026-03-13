@@ -248,11 +248,14 @@ PYEOF
     fail "openclaw.json not found in backup — cannot continue without config"
   fi
 
-  # auth-profiles.json
+  # auth-profiles.json — API keys, lives at agents/main/agent/
   if [ -f "${EXTRACT_DIR}/auth-profiles.json" ]; then
-    cp "${EXTRACT_DIR}/auth-profiles.json" "${OPENCLAW_DIR}/auth-profiles.json"
-    chmod 600 "${OPENCLAW_DIR}/auth-profiles.json"
+    mkdir -p "${OPENCLAW_DIR}/agents/main/agent"
+    cp "${EXTRACT_DIR}/auth-profiles.json" "${OPENCLAW_DIR}/agents/main/agent/auth-profiles.json"
+    chmod 600 "${OPENCLAW_DIR}/agents/main/agent/auth-profiles.json"
     ok "auth-profiles.json restored"
+  else
+    warn "auth-profiles.json not in backup — models will not work without API keys"
   fi
 
   # hooks/
@@ -412,12 +415,18 @@ SERVICE
     cd "${TOOLS_SERVER_DIR}" && npm install --quiet 2>&1 | tail -3
     ok "Tools Config Server dependencies installed"
 
-    if [ -d "${EXTRACT_DIR}/tools-server-data" ]; then
+    # Restore tools.db (credentials, intent rules, behavior rules)
+    if [ -f "${EXTRACT_DIR}/tools.db" ]; then
+      mkdir -p "${TOOLS_SERVER_DIR}/data"
+      cp "${EXTRACT_DIR}/tools.db" "${TOOLS_SERVER_DIR}/data/tools.db"
+      chmod 600 "${TOOLS_SERVER_DIR}/data/tools.db"
+      ok "tools.db restored — credentials and rules intact"
+    elif [ -d "${EXTRACT_DIR}/tools-server-data" ]; then
       mkdir -p "${TOOLS_SERVER_DIR}/data"
       cp -r "${EXTRACT_DIR}/tools-server-data/." "${TOOLS_SERVER_DIR}/data/"
-      ok "Tools Config Server data restored from backup"
+      ok "Tools Config Server data restored from backup (legacy format)"
     else
-      warn "No tools-server-data in backup — server will start empty (add credentials via dashboard)"
+      warn "No tools.db in backup — server will start empty (re-enter credentials via dashboard at https://localhost:8443)"
     fi
 
     cat > "${SYSTEMD_USER_DIR}/tools-config-server.service" << SERVICE
@@ -476,11 +485,13 @@ SERVICE
   verify "Qdrant collection exists"     curl -sf "http://localhost:${QDRANT_PORT}/collections/openclaw_memories"
   verify "Neo4j accessible"             curl -sf "http://localhost:${NEO4J_HTTP_PORT}"
   verify "openclaw.json exists"         test -f "${OPENCLAW_DIR}/openclaw.json"
+  verify "auth-profiles.json exists"    test -f "${OPENCLAW_DIR}/agents/main/agent/auth-profiles.json"
   verify "Workspace cloned"             test -d "${WORKSPACE_DIR}/.git"
   verify "Hooks executable"             test -x "${OPENCLAW_DIR}/hooks/post-update.sh"
   verify "OpenClaw binary exists"       test -f "${NPM_GLOBAL}/bin/openclaw"
   verify "Tools server dir exists"      test -d "${WORKSPACE_DIR}/tools-server"
   verify "Tools server deps"            test -d "${WORKSPACE_DIR}/tools-server/node_modules"
+  verify "Tools server DB restored"     test -f "${WORKSPACE_DIR}/tools-server/data/tools.db"
   verify "Health watchdog exists"       test -f "${OPENCLAW_DIR}/health-watchdog.sh"
   verify "Backup script exists"         test -f "${OPENCLAW_DIR}/backup-mem0.sh"
   verify "Memory daily check exists"    test -f "${OPENCLAW_DIR}/memory-daily-check.sh"
@@ -895,7 +906,11 @@ chmod 644 "$ENV_FILE"
 
 # ── Re-exec as target user ────────────────────────────────────────────────────
 info "Handing off to user zone (running as ${TARGET_USER})..."
-su - "${TARGET_USER}" -s /bin/bash -c "bash $(realpath "$0") --user-phase '$ENV_FILE'"
+SCRIPT_COPY="/tmp/teleport-restore-$$.sh"
+cp "$(realpath "$0")" "$SCRIPT_COPY"
+chmod 755 "$SCRIPT_COPY"
+su - "${TARGET_USER}" -s /bin/bash -c "bash '$SCRIPT_COPY' --user-phase '$ENV_FILE'"
+rm -f "$SCRIPT_COPY"
 EXIT_CODE=$?
 
 # Cleanup root-side temp files (user zone cleans its own copies on EXIT trap)
