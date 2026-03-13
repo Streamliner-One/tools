@@ -51,6 +51,7 @@ NEO4J_BOLT_PORT="8687"
 NEO4J_AUTH="neo4j/mem0graph"
 CREATE_USER="false"
 USER_TEMP_PASSWORD=""
+TELEGRAM_TOKEN_ARG=""
 
 # ── Colors ────────────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -74,6 +75,7 @@ while [[ $# -gt 0 ]]; do
     --workspace-repo)  WORKSPACE_REPO="$2";  shift 2 ;;
     --tools-bind)      TOOLS_BIND="$2";      shift 2 ;;
     --tools-password)  TOOLS_PASSWORD="$2";  shift 2 ;;
+    --telegram-token)  TELEGRAM_TOKEN_ARG="$2"; shift 2 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -406,6 +408,15 @@ if [ -f "${EXTRACT_DIR}/openclaw.json" ]; then
   chown "${TARGET_USER}:${TARGET_USER}" "${OPENCLAW_DIR}/openclaw.json"
   chmod 600 "${OPENCLAW_DIR}/openclaw.json"
   ok "openclaw.json restored"
+  # Inject --telegram-token if provided
+  if [ -n "$TELEGRAM_TOKEN_ARG" ]; then
+    jq --arg tok "$TELEGRAM_TOKEN_ARG" '.channels.telegram.token = $tok' \
+      "${OPENCLAW_DIR}/openclaw.json" > /tmp/openclaw.json.tmp \
+      && mv /tmp/openclaw.json.tmp "${OPENCLAW_DIR}/openclaw.json" \
+      && chown "${TARGET_USER}:${TARGET_USER}" "${OPENCLAW_DIR}/openclaw.json" \
+      && chmod 600 "${OPENCLAW_DIR}/openclaw.json"
+    ok "Telegram bot token injected from --telegram-token"
+  fi
 else
   fail "openclaw.json not found in backup — cannot continue without config"
 fi
@@ -428,9 +439,15 @@ if [ -f "${EXTRACT_DIR}/extensions.tar.gz" ]; then
   for ext_dir in "${OPENCLAW_DIR}/extensions"/*/; do
     if [ -f "${ext_dir}/package.json" ]; then
       ext_name=$(basename "$ext_dir")
-      runuser -l "${TARGET_USER}" -c "cd '${ext_dir}' && PATH='${NPM_GLOBAL}/bin:/usr/local/bin:/usr/bin:/bin' npm install --quiet 2>&1 | tail -2" \
-        && info "  ✓ ${ext_name} deps installed" \
-        || warn "  ✗ ${ext_name} npm install failed (non-fatal)"
+      if [ -f "${ext_dir}/package-lock.json" ]; then
+        runuser -l "${TARGET_USER}" -c "cd '${ext_dir}' && PATH='${NPM_GLOBAL}/bin:/usr/local/bin:/usr/bin:/bin' npm ci --quiet 2>&1 | tail -2" \
+          && info "  ✓ ${ext_name} deps installed (npm ci)" \
+          || warn "  ✗ ${ext_name} npm ci failed (non-fatal)"
+      else
+        runuser -l "${TARGET_USER}" -c "cd '${ext_dir}' && PATH='${NPM_GLOBAL}/bin:/usr/local/bin:/usr/bin:/bin' npm install --quiet 2>&1 | tail -2" \
+          && info "  ✓ ${ext_name} deps installed (npm install)" \
+          || warn "  ✗ ${ext_name} npm install failed (non-fatal)"
+      fi
     fi
   done
   chown -R "${TARGET_USER}:${TARGET_USER}" "${OPENCLAW_DIR}/extensions"
@@ -671,12 +688,21 @@ mkdir -p "/run/user/${TARGET_UID}"
 chown "${TARGET_USER}:${TARGET_USER}" "/run/user/${TARGET_UID}"
 chmod 700 "/run/user/${TARGET_UID}"
 
-warn "Gateway NOT auto-started — configure a dedicated Telegram bot token first"
-info "  Each OpenClaw instance needs its own bot. Do NOT reuse an existing bot token."
-info "  1. Create a new bot: message @BotFather on Telegram → /newbot"
-info "  2. Update openclaw.json: channels.telegram.token = <your-new-token>"
-info "  3. Then start manually: systemctl --user start openclaw-gateway"
-info "  Or run: openclaw pairing list  (after starting gateway)"
+if [ -n "$TELEGRAM_TOKEN_ARG" ]; then
+  info "Telegram bot token injected — starting gateway..."
+  runuser -l "${TARGET_USER}" -c "${XDG} systemctl --user start openclaw-gateway" 2>/dev/null || true
+  sleep 4
+  if runuser -l "${TARGET_USER}" -c "${XDG} systemctl --user is-active openclaw-gateway" 2>/dev/null | grep -q "^active"; then
+    ok "Gateway started — message your bot on Telegram to confirm"
+  else
+    warn "Gateway did not start — check: journalctl --user -u openclaw-gateway -n 20"
+  fi
+else
+  warn "Gateway NOT auto-started — no --telegram-token provided"
+  info "  1. Create a new bot via @BotFather → /newbot"
+  info "  2. Update ~/.openclaw/openclaw.json → channels.telegram.token"
+  info "  3. Start gateway: systemctl --user start openclaw-gateway"
+fi
 
 info "Starting Tools Config Server..."
 runuser -l "${TARGET_USER}" -c "${XDG} systemctl --user start tools-config-server" 2>/dev/null || true
@@ -706,11 +732,18 @@ fi
 echo "Next steps:"
 echo "  1. SSH as ${TARGET_USER}:       ssh ${TARGET_USER}@<server-ip>"
 echo "  2. Change password:       passwd"
+if [ -n "$TELEGRAM_TOKEN_ARG" ]; then
+echo "  3. Message your bot:      Open Telegram → send /start to your bot"
+echo "  4. Confirm response:      If no reply, check: journalctl --user -u openclaw-gateway -n 30"
+echo "  5. Harden:                bash ~/.openclaw/workspace/streamliner/teleport/harden.sh"
+else
 echo "  3. ⚠️  Create a NEW Telegram bot via @BotFather — do NOT reuse an existing token"
 echo "  4. Update bot token:      nano ~/.openclaw/openclaw.json"
 echo "                            → channels.telegram.token = <new-bot-token>"
 echo "  5. Start gateway:         systemctl --user start openclaw-gateway"
-echo "  6. Approve Telegram pair: openclaw pairing list → openclaw pairing approve"
+echo "  6. Message your bot:      Send /start in Telegram to confirm"
+echo "  7. Harden:                bash ~/.openclaw/workspace/streamliner/teleport/harden.sh"
+fi
 echo "  7. Tools dashboard:       https://<server-ip>:8443 (password printed above)"
 echo "  8. Harden:                bash ${WORKSPACE_DIR}/streamliner/teleport/harden.sh"
 echo ""
