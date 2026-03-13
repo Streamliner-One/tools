@@ -4,6 +4,41 @@
 
 ---
 
+## 🚀 Running a Restore (Mel Miles mode)
+
+### What you need before starting
+
+| Item | Where to find it |
+|------|-----------------|
+| Backup archive (`.tar.gz.gpg`) | Google Drive — download to server first |
+| Backup decryption key | `~/.openclaw/.backup-key` on current mel, or 1Password (emergency) |
+| GitHub token | 1Password → `github` → token field |
+| Telegram bot token | Create a dedicated test/transit bot via @BotFather first |
+
+### The command
+
+```bash
+bash teleport-restore.sh \
+  --backup /root/openclaw-backup-latest.tar.gz.gpg \
+  --key-file /root/.backup-key \
+  --github-token <token> \
+  --user alex \
+  --telegram-token <bot-token>
+```
+
+### After the script finishes
+
+1. **SSH in** as `alex` and change the temp password: `passwd`
+2. **Message your bot** on Telegram → you'll get a pairing request
+3. **Approve pairing**: `openclaw pairing list` → `openclaw pairing approve`
+4. **Verify** the agent responds in Telegram
+5. **Harden** (once everything works): `bash ~/.openclaw/workspace/streamliner/teleport/harden.sh`
+
+> If you passed `--telegram-token`, the gateway starts automatically.
+> If not, update `~/.openclaw/openclaw.json` → `channels.telegram.token`, then `systemctl --user start openclaw-gateway`.
+
+---
+
 ## What It Is
 
 Teleport is the mechanism for moving or cloning the entire Streamliner assistant stack — OpenClaw runtime, Mem0 (Qdrant + Neo4j), Tools Config Server, hooks, cron jobs, and agent identity — onto a new machine. It has two modes:
@@ -106,4 +141,4 @@ base deps → OpenClaw → Mem0 stack (Qdrant + Neo4j) → restore data
 
 ---
 
-*Last updated: 2026-03-07*
+*Last updated: 2026-03-13*
