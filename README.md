@@ -75,8 +75,8 @@ curl https://tools.streamliner.one | bash -s -- --channel latest
 
 | Channel | Version |
 |---------|---------|
-| `stable` | 1.1.0 |
-| `latest` | 1.1.0 |
+| `stable` | 1.2.0 |
+| `latest` | 1.2.0 |
 
 Channel manifest: [`versions.json`](./versions.json)
 
