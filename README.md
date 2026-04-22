@@ -30,7 +30,7 @@ Sets up Node.js, downloads the server, installs dependencies, creates a systemd 
 
 | Category | Services |
 |----------|----------|
-| **AI** | OpenAI, Anthropic, Moonshot (Kimi), Gemini (Google), OpenRouter |
+| **AI** | OpenAI, Anthropic, Moonshot (Kimi), Gemini (Google), OpenRouter, Ollama Cloud |
 | **Search** | Brave Search, Perplexity, NewsAPI, Tavily |
 | **Productivity** | Notion, Notion (Enhanced), Todoist, Google Workspace |
 | **Knowledge** | Obsidian Sync (Headless), Readwise |
@@ -39,8 +39,8 @@ Sets up Node.js, downloads the server, installs dependencies, creates a systemd 
 | **Support** | Groove HQ |
 | **Automation** | n8n |
 | **Vector DB** | Pinecone |
-| **Messaging** | Telegram |
-| **Location** | Google Places |
+| **Messaging** | Telegram, AgentMail |
+| **Location** | Google Places, OSRM |
 | **Finance** | Open Exchange Rates, Stripe |
 | **Logistics** | 17TRACK |
 | **Health** | Oura |
@@ -75,8 +75,8 @@ curl https://tools.streamliner.one | bash -s -- --channel latest
 
 | Channel | Version |
 |---------|---------|
-| `stable` | 1.2.0 |
-| `latest` | 1.2.0 |
+| `stable` | 1.3.1 |
+| `latest` | 1.3.1 |
 
 Channel manifest: [`versions.json`](./versions.json)
 
